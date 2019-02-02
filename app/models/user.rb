@@ -1,18 +1,75 @@
 class UsersController < ApplicationController  
-  def new
-    @user = User.new 
-  end
-  def create
-    @user = User.new(params[:user])
-    if @user.save
-      flash[:notice] = "You signed up successfully"
-      flash[:color]= "valid"
-    else
-      flash[:notice] = "Form is invalid"
-      flash[:color]= "invalid"
+ # JWT AUTH
+    def signin
+        @user = User.find_by(username: params[:username])
+        if @user && @user.authenticate(params[:password])
+            # render json: {username: @user.username, token: issue_token({id: @user.id})}
+            render json: @user
+        else
+            render json: {error: 'Username/password invalid.'}, status: 401
+        end
     end
-    render "new"
+    
+    # def validate
+    #     @user = get_current_user
+    #     if @user
+    #         render json: {username: @user.username, token: issue_token({id: @user.id})}
+    #     else
+    #         render json: {error: 'Username/password invalid.'}, status: 401
+    #     end
+    # end
+
+    # add athentication for users
+
+    #   CRUD METHODS
+    def index
+        @user = User.all 
+        render json: @user
+    end
+
+    def show
+        @user = User.find_by(id: params[:id])
+        if @user
+            render json: @user
+        else
+            render json: {error: 'User not found.'}, status: 400
+        end
+    end
+
+    def create
+        @user = User.new(user_params)
+        if @user.save
+            render json: @user
+        else
+            render json: {error: 'Please enter all fields correctly.'}, status: 400
+        end
+    end
+
+    def destroy
+        @user = User.find_by(id: params[:id])
+        if @User
+        @User.destroy()
+            render json: {message: 'User has been deleated!'}
+        else
+            render json: {error: 'User not found.'}, status: 400
+        end
+    end
+
+    def update
+        @User = User.find_by(id: params[:id])
+        if @User.update(user_params)
+            render json: @User
+        else
+            render json: {error: 'Unable to update user.'}, status: 400
+        end
+    end
+
+    private
+
+    def user_params
+        params.require(:user).permit(:email, :twitter, :instagram, :gmail)
+    endnew"
   end
 
-  
+
 end
